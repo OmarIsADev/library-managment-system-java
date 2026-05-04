@@ -1,5 +1,7 @@
 package com.system.librarymanagmentsystem.app;
 
+import com.system.librarymanagmentsystem.DAO.PersonDAO;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +15,22 @@ public class Student extends Person
         this.reservedBooks = new ArrayList<>();
     }
 
+    /**
+     * Attempts to log in a Student by verifying credentials against the database.
+     * Returns the Student if credentials are valid, null otherwise.
+     */
     public static Student login(String id, String password)
     {
-        System.out.println("Student login attempt for id: " + id);
+        PersonDAO dao = new PersonDAO();
+        Person person = dao.getPersonByIdAndPassword(id, password);
+        dao.disconnect();
+
+        if (person instanceof Student) {
+            System.out.println("Student login successful for: " + person.getName().getFullName());
+            return (Student) person;
+        }
+
+        System.out.println("Student login failed for id: " + id);
         return null;
     }
 
@@ -29,13 +44,23 @@ public class Student extends Person
         return reservedBooks;
     }
 
+    /**
+     * Reserves a book for this student.
+     * Delegates to Book.reserveBook() to set reservation state, then tracks it locally.
+     */
     public void reserveBook(Book book)
     {
+        book.reserveBook();
         reservedBooks.add(book);
     }
 
+    /**
+     * Returns a book that was reserved by this student.
+     * Delegates to Book.returnBook() to clear reservation state, then removes from local list.
+     */
     public void returnBook(Book book)
     {
+        book.returnBook();
         reservedBooks.remove(book);
     }
 }

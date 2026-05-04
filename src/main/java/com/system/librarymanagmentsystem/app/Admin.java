@@ -1,5 +1,7 @@
 package com.system.librarymanagmentsystem.app;
 
+import com.system.librarymanagmentsystem.DAO.PersonDAO;
+
 public class Admin extends Person
 {
 
@@ -8,9 +10,22 @@ public class Admin extends Person
         super(id, name, password);
     }
 
+    /**
+     * Attempts to log in an Admin by verifying credentials against the database.
+     * Returns the Admin if credentials are valid, null otherwise.
+     */
     public static Admin login(String id, String password)
     {
-        System.out.println("Admin login attempt for id: " + id);
+        PersonDAO dao = new PersonDAO();
+        Person person = dao.getPersonByIdAndPassword(id, password);
+        dao.disconnect();
+
+        if (person instanceof Admin) {
+            System.out.println("Admin login successful for: " + person.getName().getFullName());
+            return (Admin) person;
+        }
+
+        System.out.println("Admin login failed for id: " + id);
         return null;
     }
 
