@@ -16,11 +16,6 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    /**
-     * POST /api/admin/add-admin
-     * Body: { "id": "...", "firstName": "...", "lastName": "...", "password": "..." }
-     * Requires HEAD_ADMIN role.
-     */
     @PostMapping("/add-admin")
     public ResponseEntity<ApiResponse> addAdmin(
             @RequestBody Map<String, String> body,

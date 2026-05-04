@@ -21,10 +21,6 @@ public class AuthController {
         this.jwtUtils = jwtUtils;
     }
 
-    /**
-     * POST /api/auth/login
-     * Body: { "id": "...", "password": "...", "role": "STUDENT|ADMIN|HEAD_ADMIN" }
-     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody Map<String, String> body) {
         String id = body.get("id");
@@ -63,10 +59,6 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok("Login successful", data));
     }
 
-    /**
-     * POST /api/auth/register
-     * Body: { "id": "...", "firstName": "...", "lastName": "...", "password": "..." }
-     */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse> register(@RequestBody Map<String, String> body) {
         String id = body.get("id");

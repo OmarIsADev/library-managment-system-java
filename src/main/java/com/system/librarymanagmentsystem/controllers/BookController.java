@@ -15,10 +15,6 @@ import java.util.Map;
 @RequestMapping("/api/books")
 public class BookController {
 
-    /**
-     * GET /api/books
-     * Returns all books.
-     */
     @GetMapping
     public ResponseEntity<ApiResponse> getAllBooks() {
         BookDAO dao = new BookDAO();
@@ -29,10 +25,6 @@ public class BookController {
         return ResponseEntity.ok(ApiResponse.ok(bookList));
     }
 
-    /**
-     * GET /api/books/{id}
-     * Returns a book by ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getBookById(@PathVariable String id) {
         BookDAO dao = new BookDAO();
@@ -47,10 +39,6 @@ public class BookController {
         return ResponseEntity.ok(ApiResponse.ok(bookToMap(book)));
     }
 
-    /**
-     * POST /api/books
-     * Body: { "id": "...", "title": "...", "price": 29.99 }
-     */
     @PostMapping
     public ResponseEntity<ApiResponse> addBook(@RequestBody Map<String, Object> body) {
         String id = (String) body.get("id");
@@ -80,10 +68,6 @@ public class BookController {
                 .body(ApiResponse.ok("Book added", bookToMap(book)));
     }
 
-    /**
-     * PUT /api/books/{id}
-     * Body: { "title": "...", "price": 29.99 }
-     */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> updateBook(@PathVariable String id, @RequestBody Map<String, Object> body) {
         BookDAO dao = new BookDAO();
@@ -105,9 +89,6 @@ public class BookController {
         return ResponseEntity.ok(ApiResponse.ok("Book updated", bookToMap(book)));
     }
 
-    /**
-     * DELETE /api/books/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse> deleteBook(@PathVariable String id) {
         BookDAO dao = new BookDAO();
@@ -125,9 +106,6 @@ public class BookController {
         return ResponseEntity.ok(ApiResponse.ok("Book deleted", null));
     }
 
-    /**
-     * POST /api/books/{id}/reserve
-     */
     @PostMapping("/{id}/reserve")
     public ResponseEntity<ApiResponse> reserveBook(@PathVariable String id) {
         BookDAO dao = new BookDAO();
@@ -152,9 +130,6 @@ public class BookController {
         return ResponseEntity.ok(ApiResponse.ok("Book reserved", bookToMap(book)));
     }
 
-    /**
-     * POST /api/books/{id}/return
-     */
     @PostMapping("/{id}/return")
     public ResponseEntity<ApiResponse> returnBook(@PathVariable String id) {
         BookDAO dao = new BookDAO();
