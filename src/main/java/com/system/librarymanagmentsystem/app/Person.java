@@ -18,4 +18,8 @@ public abstract class Person {
     public Name getName() {
         return name;
     }
+
+    public String getPassword() {
+        return password;
+    }
 }
