@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
 public class PasswordUtils {
 
     /**
-     * Hashes a plaintext password using SHA-256.
+     * Hash SHA-256.
      */
     public static String hash(String password) {
         try {
@@ -16,7 +16,8 @@ public class PasswordUtils {
             StringBuilder hexString = new StringBuilder();
             for (byte b : hashBytes) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1)
+                    hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
@@ -25,9 +26,6 @@ public class PasswordUtils {
         }
     }
 
-    /**
-     * Verifies a plaintext password against a stored hash.
-     */
     public static boolean verify(String password, String hashedPassword) {
         return hash(password).equals(hashedPassword);
     }
