@@ -6,6 +6,7 @@ import com.system.librarymanagmentsystem.app.Student;
 import com.system.librarymanagmentsystem.app.Admin;
 import com.system.librarymanagmentsystem.app.HeadAdmin;
 import com.system.librarymanagmentsystem.handlers.DBHandler;
+import com.system.librarymanagmentsystem.handlers.PasswordUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,15 +14,14 @@ import java.util.List;
 
 public class PersonDAO extends DBHandler {
 
-    private static final String CREATE_TABLE_SQL =
-            "CREATE TABLE IF NOT EXISTS persons (" +
-                    "id TEXT PRIMARY KEY, " +
-                    "first_name TEXT NOT NULL, " +
-                    "last_name TEXT NOT NULL, " +
-                    "full_name TEXT NOT NULL, " +
-                    "password TEXT NOT NULL, " +
-                    "role TEXT NOT NULL" +
-                    ")";
+    private static final String CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS persons (" +
+            "id TEXT PRIMARY KEY, " +
+            "first_name TEXT NOT NULL, " +
+            "last_name TEXT NOT NULL, " +
+            "full_name TEXT NOT NULL, " +
+            "password TEXT NOT NULL, " +
+            "role TEXT NOT NULL" +
+            ")";
 
     public PersonDAO() {
         connect();
@@ -39,10 +39,11 @@ public class PersonDAO extends DBHandler {
             pstmt.setString(2, person.getName().getFirstName());
             pstmt.setString(3, person.getName().getLastName());
             pstmt.setString(4, person.getName().getFullName());
-            pstmt.setString(5, person.getPassword());
+            pstmt.setString(5, PasswordUtils.hash(person.getPassword()));
             pstmt.setString(6, role);
             pstmt.executeUpdate();
-            System.out.println("Person '" + person.getName().getFullName() + "' (" + role + ") inserted into database.");
+            System.out
+                    .println("Person '" + person.getName().getFullName() + "' (" + role + ") inserted into database.");
         } catch (SQLException e) {
             System.out.println("Error inserting person: " + e.getMessage());
         }
@@ -70,16 +71,12 @@ public class PersonDAO extends DBHandler {
         return null;
     }
 
-    /**
-     * Looks up a person by id and password for login verification.
-     * Returns the Person if credentials match, null otherwise.
-     */
     public Person getPersonByIdAndPassword(String id, String password) {
         String sql = "SELECT * FROM persons WHERE id = ? AND password = ?";
 
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, id);
-            pstmt.setString(2, password);
+            pstmt.setString(2, PasswordUtils.hash(password));
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
@@ -103,7 +100,7 @@ public class PersonDAO extends DBHandler {
         String sql = "SELECT * FROM persons";
 
         try (Statement stmt = getConnection().createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 persons.add(mapResultSetToPerson(rs));
@@ -165,7 +162,7 @@ public class PersonDAO extends DBHandler {
     }
 
     private String getRole(Person person) {
-        if (person instanceof com.system.librarymanagmentsystem.app.HeadAdmin) {
+        if (person instanceof HeadAdmin) {
             return "HEAD_ADMIN";
         } else if (person instanceof Admin) {
             return "ADMIN";
