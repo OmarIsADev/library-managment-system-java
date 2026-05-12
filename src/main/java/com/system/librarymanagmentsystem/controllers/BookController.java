@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/books")
 public class BookController {
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ApiResponse> getAllBooks() {
         BookDAO dao = new BookDAO();
         List<Book> books = dao.getAllBooks();
@@ -40,7 +40,12 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse> addBook(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse> addBook(@RequestBody Map<String, Object> body, @RequestAttribute(value = "role", required = false) String role) {
+        if (!"ADMIN".equals(role) && !"HEAD_ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only admins can add books"));
+        }
+
         String id = (String) body.get("id");
         String title = (String) body.get("title");
         Double price = body.get("price") != null ? ((Number) body.get("price")).doubleValue() : null;
@@ -90,7 +95,12 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteBook(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> deleteBook(@PathVariable String id, @RequestAttribute(value = "role", required = false) String role) {
+        if (!"ADMIN".equals(role) && !"HEAD_ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Only admins can delete books"));
+        }
+
         BookDAO dao = new BookDAO();
         Book book = dao.getRecordById(id);
 

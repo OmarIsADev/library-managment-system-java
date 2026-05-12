@@ -25,7 +25,6 @@ public class AuthController {
     public ResponseEntity<ApiResponse> login(@RequestBody Map<String, String> body) {
         String id = body.get("id");
         String password = body.get("password");
-        String role = body.getOrDefault("role", "STUDENT").toUpperCase();
 
         if (id == null || password == null) {
             return ResponseEntity.badRequest()
@@ -42,19 +41,15 @@ public class AuthController {
         }
 
         // Verify the person matches the requested role
-        String actualRole = getRole(person);
-        if (!actualRole.equals(role)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Invalid credentials for role: " + role));
-        }
+        String role = getRole(person);
 
-        String token = jwtUtils.generateToken(person.getId(), actualRole);
+        String token = jwtUtils.generateToken(person.getId(), role);
 
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("id", person.getId());
         data.put("name", person.getName().getFullName());
-        data.put("role", actualRole);
+        data.put("role", role);
 
         return ResponseEntity.ok(ApiResponse.ok("Login successful", data));
     }
