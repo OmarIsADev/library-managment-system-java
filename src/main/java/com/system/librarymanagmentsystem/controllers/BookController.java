@@ -1,6 +1,7 @@
 package com.system.librarymanagmentsystem.controllers;
 
 import com.system.librarymanagmentsystem.DAO.BookDAO;
+import com.system.librarymanagmentsystem.DAO.TransactionDAO;
 import com.system.librarymanagmentsystem.app.Book;
 import com.system.librarymanagmentsystem.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> getBookById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> getBookById(@PathVariable("id") String id) {
         BookDAO dao = new BookDAO();
         Book book = dao.getRecordById(id);
         dao.disconnect();
@@ -40,7 +41,8 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse> addBook(@RequestBody Map<String, Object> body, @RequestAttribute(value = "role", required = false) String role) {
+    public ResponseEntity<ApiResponse> addBook(@RequestBody Map<String, Object> body,
+            @RequestAttribute(value = "role", required = false) String role) {
         if (!"ADMIN".equals(role) && !"HEAD_ADMIN".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only admins can add books"));
@@ -74,7 +76,8 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse> updateBook(@PathVariable String id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<ApiResponse> updateBook(@PathVariable("id") String id,
+            @RequestBody Map<String, Object> body) {
         BookDAO dao = new BookDAO();
         Book book = dao.getRecordById(id);
 
@@ -87,7 +90,12 @@ public class BookController {
         if (body.containsKey("title")) {
             book.setTitle((String) body.get("title"));
         }
-        // Price is read-only in current Book class, so we recreate if needed
+        if (body.containsKey("price")) {
+            book.setPrice(((Number) body.get("price")).doubleValue());
+        }
+        if (body.containsKey("lateFeePerDay")) {
+            book.setLateFeePerDay(((Number) body.get("lateFeePerDay")).doubleValue());
+        }
         dao.updateRecord(book);
         dao.disconnect();
 
@@ -95,7 +103,8 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteBook(@PathVariable String id, @RequestAttribute(value = "role", required = false) String role) {
+    public ResponseEntity<ApiResponse> deleteBook(@PathVariable("id") String id,
+            @RequestAttribute(value = "role", required = false) String role) {
         if (!"ADMIN".equals(role) && !"HEAD_ADMIN".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only admins can delete books"));
@@ -117,7 +126,8 @@ public class BookController {
     }
 
     @PostMapping("/{id}/reserve")
-    public ResponseEntity<ApiResponse> reserveBook(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> reserveBook(@PathVariable("id") String id,
+            @RequestAttribute(value = "userId", required = false) String userId) {
         BookDAO dao = new BookDAO();
         Book book = dao.getRecordById(id);
 
@@ -133,15 +143,21 @@ public class BookController {
                     .body(ApiResponse.error("Book '" + book.getTitle() + "' is already reserved"));
         }
 
-        book.reserveBook();
+        book.reserveBook(userId);
         dao.updateRecord(book);
         dao.disconnect();
+
+        // Record the transaction
+        TransactionDAO transactionDAO = new TransactionDAO();
+        transactionDAO.insertTransaction(userId, id, "RESERVE", book.getDueDate(), 0);
+        transactionDAO.disconnect();
 
         return ResponseEntity.ok(ApiResponse.ok("Book reserved", bookToMap(book)));
     }
 
     @PostMapping("/{id}/return")
-    public ResponseEntity<ApiResponse> returnBook(@PathVariable String id) {
+    public ResponseEntity<ApiResponse> returnBook(@PathVariable("id") String id,
+            @RequestAttribute(value = "userId", required = false) String userId) {
         BookDAO dao = new BookDAO();
         Book book = dao.getRecordById(id);
 
@@ -157,11 +173,25 @@ public class BookController {
                     .body(ApiResponse.error("Book '" + book.getTitle() + "' is not reserved"));
         }
 
+        // Calculate late fee before clearing reservation state
+        double lateFee = book.calculateLateFee();
+        String reservedBy = book.getReservedBy();
+
         book.returnBook();
         dao.updateRecord(book);
         dao.disconnect();
 
-        return ResponseEntity.ok(ApiResponse.ok("Book returned", bookToMap(book)));
+        // Record the transaction (use the original reserver's ID, not the returner)
+        TransactionDAO transactionDAO = new TransactionDAO();
+        transactionDAO.insertTransaction(
+                reservedBy != null ? reservedBy : userId,
+                id, "RETURN", null, lateFee);
+        transactionDAO.disconnect();
+
+        Map<String, Object> responseData = bookToMap(book);
+        responseData.put("lateFeeCharged", lateFee);
+
+        return ResponseEntity.ok(ApiResponse.ok("Book returned", responseData));
     }
 
     private Map<String, Object> bookToMap(Book book) {
@@ -170,9 +200,12 @@ public class BookController {
         map.put("title", book.getTitle());
         map.put("price", book.getPrice());
         map.put("reserved", book.isReserved());
+        map.put("reservedBy", book.getReservedBy());
+        map.put("reservedDate", book.getReservedDate());
         map.put("dueDate", book.getDueDate());
         map.put("overdue", book.isOverdue());
         map.put("lateFee", book.calculateLateFee());
+        map.put("lateFeePerDay", book.getLateFeePerDay());
         return map;
     }
 }

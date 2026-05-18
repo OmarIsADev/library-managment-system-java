@@ -8,11 +8,12 @@ public class Book {
     private String title;
     private double price;
     private boolean reserved;
+    private String reservedBy;
     private Date reservedDate;
     private Date dueDate;
     private Shelf shelf;
 
-    private static final double LATE_FEE_PER_DAY = 0.50;
+    private double lateFeePerDay = 0.50;
 
     public Book(String title, String ID, double price, Shelf shelf){
         this.title=title;
@@ -36,6 +37,18 @@ public class Book {
         return price;
     }
 
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getLateFeePerDay() {
+        return lateFeePerDay;
+    }
+
+    public void setLateFeePerDay(double lateFeePerDay) {
+        this.lateFeePerDay = lateFeePerDay;
+    }
+
     public String getID() {
         return ID;
     }
@@ -48,6 +61,14 @@ public class Book {
         return dueDate;
     }
 
+    public Date getReservedDate() {
+        return reservedDate;
+    }
+
+    public String getReservedBy() {
+        return reservedBy;
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -56,23 +77,47 @@ public class Book {
         this.shelf = shelf;
     }
 
+    public void setReserved(boolean reserved) {
+        this.reserved = reserved;
+    }
+
+    public void setReservedBy(String reservedBy) {
+        this.reservedBy = reservedBy;
+    }
+
+    public void setReservedDate(Date reservedDate) {
+        this.reservedDate = reservedDate;
+    }
+
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
+
 
     /**
      * Reserves the book with a default duration of 14 days.
      */
     public void reserveBook(){
-        reserveBook(14);
+        reserveBook(null, 14);
+    }
+
+    /**
+     * Reserves the book for a student with a default duration of 14 days.
+     */
+    public void reserveBook(String studentId){
+        reserveBook(studentId, 14);
     }
 
     /**
      * Reserves the book for a specified number of days.
      */
-    public void reserveBook(int days){
+    public void reserveBook(String studentId, int days){
         // cannot reserve an already reserved book
         if(reserved) {
             throw new IllegalStateException("Book '"+title + "' is  already reserved");
         }
         this.reserved=true;
+        this.reservedBy=studentId;
         this.reservedDate= new Date(); // set reservation date to today
         this.dueDate=new Date(System.currentTimeMillis()+ (long) days *24*60*60*1000);
         System.out.println("Reserved: "+title+" Due: "+dueDate);
@@ -84,6 +129,7 @@ public class Book {
             throw  new IllegalStateException("Book '"+title+ "' was not reserved ");
         }
         this.reserved=false;
+        this.reservedBy=null;// clear who reserved it
         this.reservedDate=null;// clear reservation date
         this.dueDate=null;// clear due date
         System.out.println("Returned: "+title);
@@ -109,7 +155,7 @@ public class Book {
         }
         long overdueMs = System.currentTimeMillis() - dueDate.getTime();
         long overdueDays = overdueMs / (24 * 60 * 60 * 1000);
-        return overdueDays * LATE_FEE_PER_DAY;
+        return overdueDays * lateFeePerDay;
     }
 
     //searchByName
