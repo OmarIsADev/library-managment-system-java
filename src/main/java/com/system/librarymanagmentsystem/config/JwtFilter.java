@@ -35,7 +35,15 @@ public class JwtFilter implements Filter {
         HttpServletResponse httpRes = (HttpServletResponse) response;
         String path = httpReq.getRequestURI();
 
-        // Allow preflight CORS requests
+        // Ensure CORS headers are present on all responses (including errors)
+        String origin = httpReq.getHeader("Origin");
+        if (origin != null) {
+            httpRes.setHeader("Access-Control-Allow-Origin", origin);
+            httpRes.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            httpRes.setHeader("Access-Control-Allow-Headers", "*");
+        }
+
+        // Allow preflight CORS requests (handled by CorsFilter, but skip auth here too)
         if ("OPTIONS".equalsIgnoreCase(httpReq.getMethod())) {
             chain.doFilter(request, response);
             return;
