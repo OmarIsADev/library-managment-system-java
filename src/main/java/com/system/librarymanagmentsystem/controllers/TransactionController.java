@@ -13,9 +13,6 @@ import java.util.Map;
 @RequestMapping("/api/transactions")
 public class TransactionController {
 
-    /**
-     * Get transactions for the currently authenticated user.
-     */
     @GetMapping("/my")
     public ResponseEntity<ApiResponse> getMyTransactions(
             @RequestAttribute(value = "userId", required = false) String userId) {
@@ -31,9 +28,6 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.ok(transactions));
     }
 
-    /**
-     * Get active reservations (currently checked-out books) for the authenticated user.
-     */
     @GetMapping("/my/active")
     public ResponseEntity<ApiResponse> getMyActiveReservations(
             @RequestAttribute(value = "userId", required = false) String userId) {
@@ -49,9 +43,6 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.ok(reservations));
     }
 
-    /**
-     * Get all transactions for a specific student (admin only).
-     */
     @GetMapping("/student/{studentId}")
     public ResponseEntity<ApiResponse> getTransactionsByStudent(
             @PathVariable("studentId") String studentId,
@@ -68,9 +59,6 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.ok(transactions));
     }
 
-    /**
-     * Get all transactions for a specific book (admin only).
-     */
     @GetMapping("/book/{bookId}")
     public ResponseEntity<ApiResponse> getTransactionsByBook(
             @PathVariable("bookId") String bookId,
@@ -87,9 +75,6 @@ public class TransactionController {
         return ResponseEntity.ok(ApiResponse.ok(transactions));
     }
 
-    /**
-     * Get all transactions (admin only).
-     */
     @GetMapping("/all")
     public ResponseEntity<ApiResponse> getAllTransactions(
             @RequestAttribute(value = "role", required = false) String role) {

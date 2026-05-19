@@ -49,7 +49,6 @@ public class BookDAO extends DBHandler {
             try (Statement stmt = getConnection().createStatement()) {
                 stmt.execute(sql);
             } catch (SQLException ignored) {
-                // Column already exists — safe to ignore
             }
         }
     }
@@ -185,16 +184,12 @@ public class BookDAO extends DBHandler {
         String reservedBy = rs.getString("reserved_by");
         String reservedDateStr = rs.getString("reserved_date");
         String dueDateStr = rs.getString("due_date");
-        // Shelf is not fully reconstructed here; set to null
-        // In a real app you'd look up the shelf from a ShelfDAO
         Book book = new Book(title, id, price, null);
 
-        // Restore late fee per day (handle missing column gracefully)
         try {
             double lateFeePerDay = rs.getDouble("late_fee_per_day");
             book.setLateFeePerDay(lateFeePerDay);
         } catch (SQLException ignored) {
-            // Column may not exist in older databases
         }
 
         if (reserved) {

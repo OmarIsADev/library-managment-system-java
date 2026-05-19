@@ -59,7 +59,6 @@ public class BookController {
 
         BookDAO dao = new BookDAO();
 
-        // Check if book already exists
         Book existing = dao.getRecordById(id);
         if (existing != null) {
             dao.disconnect();
@@ -147,7 +146,6 @@ public class BookController {
         dao.updateRecord(book);
         dao.disconnect();
 
-        // Record the transaction
         TransactionDAO transactionDAO = new TransactionDAO();
         transactionDAO.insertTransaction(userId, id, "RESERVE", book.getDueDate(), 0);
         transactionDAO.disconnect();
@@ -173,7 +171,6 @@ public class BookController {
                     .body(ApiResponse.error("Book '" + book.getTitle() + "' is not reserved"));
         }
 
-        // Calculate late fee before clearing reservation state
         double lateFee = book.calculateLateFee();
         String reservedBy = book.getReservedBy();
 
@@ -181,7 +178,6 @@ public class BookController {
         dao.updateRecord(book);
         dao.disconnect();
 
-        // Record the transaction (use the original reserver's ID, not the returner)
         TransactionDAO transactionDAO = new TransactionDAO();
         transactionDAO.insertTransaction(
                 reservedBy != null ? reservedBy : userId,

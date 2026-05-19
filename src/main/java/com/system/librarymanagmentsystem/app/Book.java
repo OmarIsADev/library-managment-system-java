@@ -20,7 +20,7 @@ public class Book {
         this.ID=ID;
         this.price=price;
         this.shelf=shelf;
-        this.reserved=false;// book is not reserved by default
+        this.reserved=false;
     }
 
 
@@ -108,30 +108,25 @@ public class Book {
         reserveBook(studentId, 14);
     }
 
-    /**
-     * Reserves the book for a specified number of days.
-     */
     public void reserveBook(String studentId, int days){
-        // cannot reserve an already reserved book
         if(reserved) {
             throw new IllegalStateException("Book '"+title + "' is  already reserved");
         }
         this.reserved=true;
         this.reservedBy=studentId;
-        this.reservedDate= new Date(); // set reservation date to today
+        this.reservedDate= new Date();
         this.dueDate=new Date(System.currentTimeMillis()+ (long) days *24*60*60*1000);
         System.out.println("Reserved: "+title+" Due: "+dueDate);
     }
 
     public void returnBook(){
-        // cannot return a book that was never reserved
         if(!reserved){
             throw  new IllegalStateException("Book '"+title+ "' was not reserved ");
         }
         this.reserved=false;
-        this.reservedBy=null;// clear who reserved it
-        this.reservedDate=null;// clear reservation date
-        this.dueDate=null;// clear due date
+        this.reservedBy=null;
+        this.reservedDate=null;
+        this.dueDate=null;
         System.out.println("Returned: "+title);
     }
 
@@ -158,9 +153,7 @@ public class Book {
         return overdueDays * lateFeePerDay;
     }
 
-    //searchByName
     public Book searchBook(String name) {
-        // if the book has no shelf, nothing to search
         if (shelf == null)
             return null;
         for (Book b : shelf.getBooks()) {
@@ -168,7 +161,7 @@ public class Book {
                 return b;
             }
         }
-        return null;// nothing matched
+        return null;
     }
 
     public Book searchBookById(String id) {
@@ -179,5 +172,4 @@ public class Book {
         }
         return null;
     }
-    //these two methods have the same name and same parameter  So I changed the names and keeps the parameter and also add get id in book class
 }

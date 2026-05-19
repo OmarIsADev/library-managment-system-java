@@ -14,9 +14,6 @@ public class JwtFilter implements Filter {
 
     private final JwtUtils jwtUtils;
 
-    /**
-     * Paths that do NOT require authentication.
-     */
     private static final Set<String> PUBLIC_PATHS = Set.of(
             "/api/auth/login",
             "/api/auth/register",
@@ -35,7 +32,6 @@ public class JwtFilter implements Filter {
         HttpServletResponse httpRes = (HttpServletResponse) response;
         String path = httpReq.getRequestURI();
 
-        // Ensure CORS headers are present on all responses (including errors)
         String origin = httpReq.getHeader("Origin");
         if (origin != null) {
             httpRes.setHeader("Access-Control-Allow-Origin", origin);
@@ -43,25 +39,21 @@ public class JwtFilter implements Filter {
             httpRes.setHeader("Access-Control-Allow-Headers", "*");
         }
 
-        // Allow preflight CORS requests (handled by CorsFilter, but skip auth here too)
         if ("OPTIONS".equalsIgnoreCase(httpReq.getMethod())) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Skip auth for public endpoints
         if (PUBLIC_PATHS.contains(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Skip auth for non-API paths
         if (!path.startsWith("/api/")) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Extract and validate token
         String authHeader = httpReq.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             httpRes.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -78,7 +70,6 @@ public class JwtFilter implements Filter {
             return;
         }
 
-        // Attach user info to request attributes for controllers to use
         httpReq.setAttribute("userId", jwtUtils.getUserId(token));
         httpReq.setAttribute("role", jwtUtils.getRole(token));
 

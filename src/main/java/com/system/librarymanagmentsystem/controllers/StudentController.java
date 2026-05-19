@@ -16,10 +16,6 @@ import java.util.*;
 @RequestMapping("/api/student")
 public class StudentController {
 
-    /**
-     * Get the profile of the currently authenticated student,
-     * including their reserved books from the database.
-     */
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse> getProfile(
             @RequestAttribute(value = "userId", required = false) String userId) {
@@ -37,7 +33,6 @@ public class StudentController {
                     .body(ApiResponse.error("User not found"));
         }
 
-        // Get books currently reserved by this student
         BookDAO bookDAO = new BookDAO();
         List<Book> reserved = bookDAO.getBooksByReservedBy(userId);
         bookDAO.disconnect();
@@ -57,10 +52,6 @@ public class StudentController {
         return ResponseEntity.ok(ApiResponse.ok(profile));
     }
 
-    /**
-     * Get a student's profile by ID (admin only).
-     * Includes their reserved books.
-     */
     @GetMapping("/{studentId}")
     public ResponseEntity<ApiResponse> getStudentProfile(
             @PathVariable("studentId") String studentId,
@@ -79,7 +70,6 @@ public class StudentController {
                     .body(ApiResponse.error("Student not found with id: " + studentId));
         }
 
-        // Get books currently reserved by this student
         BookDAO bookDAO = new BookDAO();
         List<Book> reserved = bookDAO.getBooksByReservedBy(studentId);
         bookDAO.disconnect();
@@ -88,7 +78,6 @@ public class StudentController {
                 .map(this::bookToMap)
                 .toList();
 
-        // Get transaction history
         TransactionDAO transactionDAO = new TransactionDAO();
         List<Map<String, Object>> transactions = transactionDAO.getTransactionsByStudentId(studentId);
         transactionDAO.disconnect();
